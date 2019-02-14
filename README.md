@@ -120,17 +120,3 @@ Now in the `deployment/service.yaml` file update the `image` URI to value of `IM
 ## Disclaimer
 
 This is my personal project and it does not represent my employer. I take no responsibility for issues caused by this code. I do my best to ensure that everything works, but if something goes wrong, my apologies is all you will get.
-
-
-
-```json
-{
-  "contenttype": "text/plain",
-  "data": "This is my sample message",
-  "id": "6CC459AE-D75D-4556-8C14-CD1ED5D95AE7",
-  "source": "https://github.com/mchmarny/knative-ws-example",
-  "specversion": "0.2",
-  "time": "2019-02-13T17:31:00Z",
-  "type": "github.com.mchmarny.knative-ws-example.message"
-}
-```
