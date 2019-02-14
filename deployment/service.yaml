@@ -9,7 +9,7 @@ spec:
       revisionTemplate:
         spec:
           container:
-            image: gcr.io/s9-demo/kws:latest
+            image: gcr.io/knative-samples/kws:latest
             imagePullPolicy: Always
             env:
             - name: RELEASE

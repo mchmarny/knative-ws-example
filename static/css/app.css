@@ -76,6 +76,7 @@ body {
 	padding: 5px;
 	height: 40px;
 	color: white;
+	font-family: "Lucida Console", "Courier New", monospace;
 }
 
 #eventlog {

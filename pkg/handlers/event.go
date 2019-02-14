@@ -71,6 +71,6 @@ func CloudEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	// response with the parsed payload data
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(event)
+	json.NewEncoder(w).Encode(eventData)
 
 }

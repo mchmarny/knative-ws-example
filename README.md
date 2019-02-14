@@ -1,119 +1,136 @@
-# myevents
+# knative-ws-example
 
-Knative Cloud Events Gateway and Viewer
+Simple Knative WebSocket example consisting of Web UI displaying POST'ed Cloud Events
 
-## Demo
+![Knative WebSocket](/../master/static/img/after.png?raw=true "Knative WebSocket")
 
-https://myevents.default.knative.tech/
+## Prerequisites
+
+This sample assumes you already have access to Knative cluster with at least `v0.4` and `kubectl` configured.
+
+Additionally, if you are want to build the demo you will need `gcloud` installed. See [Installing Google Cloud SDK](https://cloud.google.com/sdk/install)
 
 ## Setup
 
-Setup assumes you already have `gcloud` installed. If not, see [Installing Google Cloud SDK](https://cloud.google.com/sdk/install)
+In configuring the The Knative WebSocket example we will deploy pre-built image of this application and use `curl` to post messages to that application, which if everything is configured correctly, will show on in the UI.
 
+> Note, if you prefer to build your own image please see `Build` section bellow
 
-> This readme is still a bit of work in progress so if you are finding something missing do take a look at the [Makefile](https://github.com/mchmarny/myevents/blob/master/Makefile)
+### Token
 
-### Knative URL
-
-To avoid the kind of chicken and an egg situation we are going to first define the `URL` that your application will have when you publish it on Knative. Knative uses convention to build serving URL by combining the deployment name (e.g. `myevents`), namespace name (e.g. `default`), and the pre-configured domain name (e.g. `knative.tech`). The resulting URL, assuming you already configured SSL, should look something like this:
+To prevent just anyone publishing to your application we are going to configure `token` which will be shared between the application and all permitted clients. Let's start by creating a token
 
 ```shell
-https://myevents.default.knative.tech
+KNOWN_PUBLISHER_TOKEN=$(uuidgen)
+echo $KNOWN_PUBLISHER_TOKEN
 ```
 
-### Google OAuth Credentials
+### Namespace
 
-In your Google Cloud Platform (GCP) project console navigate to the Credentials section. You can use the search bar, just type `Credentials` and select the option with "API & Services". To create new OAuth credentials:
+If you don't already have a `demo` namespace created
 
-* Click “Create credentials” and select “OAuth client ID”
-* Select "Web application"
-* Add authorized redirect URL at the bottom using the fully qualified domain we defined above and appending the `callback` path:
- * `https://myevents.default.knative.tech/auth/callback`
-* Click create and copy both `client id` and `client secret`
-* CLICK `OK` to save
+```shell
+kubectl create ns demo
+```
 
-For ease of use, export the copied client `id` as `MYEVENTS_OAUTH_CLIENT_ID` and `secret` as `MYEVENTS_OAUTH_CLIENT_SECRET` in your environment variables (e.g. ~/.bashrc or ~/.profile)
+### Secret
 
-> You will also have to verify the domain ownership. More on that [here](https://support.google.com/cloud/answer/6158849?hl=en#authorized-domains)
+Before deploying our application we will load the above token into the Knative cluster as a secret so that our application can use it
 
 
-### App Deployment
+```shell
+kubectl create secret generic kws -n demo \
+	--from-literal=KNOWN_PUBLISHER_TOKEN=${KNOWN_PUBLISHER_TOKEN}
+```
 
-> TODO: Provide public image deployment instructions
+### Service
 
-To deploy the `myevents` are are going to:
+Once our namespace and secret is created, you can apply the  (`deployment/service.yaml`) to deploy the application
 
-* [Build the image](#build-the-image)
-* [Configure Knative](#configure-knative)
-* [Deploy Service](#deploy-service)
+```shell
+kubectl apply -f deployment/service.yaml
+```
 
-#### Build the image
+If everything worked correctly you should be able to see the `kws` service listed as running
 
-Quickest way to build your service image is through [GCP Build](https://cloud.google.com/cloud-build/). Just submit the build request from within the `myevents` directory:
+```shell
+kubectl get pods -n demo
+```
+
+```shell
+NAME                                      READY     STATUS      RESTARTS   AGE
+kws-00001-deployment-74c64b8d6b-6dqds     3/3       Running     1          1m
+```
+
+## Demo
+
+### UI
+
+First navigate to the newly deployed application
+
+http://kws.demo.YOUR-DOAIN.com/
+
+The status message on the top fo the screen should say `Opening Connection`
+
+### Client
+
+Now that the application is deployed, you can use `curl` to post to its endpoint and the messages should show on the UI. For ease of demonstration we are going to post a simple text message with hard-coded values.
+
+```shell
+curl -H "Content-Type: application/json" \
+     -X POST --data "{ \
+        \"specversion\": \"0.2\", \
+        \"type\": \"github.com.mchmarny.knative-ws-example.message\", \
+        \"source\": \"https://github.com/mchmarny/knative-ws-example\", \
+        \"id\": \"6CC459AE-D75D-4556-8C14-CD1ED5D95AE7\", \
+        \"time\": \"2019-02-13T17:31:00Z\", \
+        \"contenttype\": \"text/plain\", \
+        \"data\": \"This is my sample message\" \
+    }" \
+    http://kws.demo.YOUR-DOAIN.com/?token=${KNOWN_PUBLISHER_TOKEN}
+```
+
+Every time you run that command, a new message should be added to the UI. Go ahead, change the `data` value from `This is my sample message` to something else and post it.
+
+## Build
+
+> Note, do this only if you want to build from source, otherwise use the pre-built image
+
+Quickest way to build your service image is through [GCP Build](https://cloud.google.com/cloud-build/). Just submit the build request using the bellow command
 
 ```shell
 gcloud builds submit \
-    --project ${GCP_PROJECT} \
-	--tag gcr.io/${GCP_PROJECT}/myevents:latest
+    --project ${YOUR_GCP_PROJECT} \
+	--tag gcr.io/${YOUR_GCP_PROJECT}/kws
 ```
 
 The build service is pretty verbose in output but eventually you should see something like this
 
 ```shell
-ID           CREATE_TIME          DURATION  SOURCE                                   IMAGES                      STATUS
-6905dd3a...  2018-12-23T03:48...  1M43S     gs://PROJECT_cloudbuild/source/15...tgz  gcr.io/PROJECT/myevents SUCCESS
+ID           CREATE_TIME          DURATION  SOURCE                                   IMAGES               STATUS
+6905dd3a...  2018-12-23T03:48...  1M43S     gs://PROJECT_cloudbuild/source/15...tgz  gcr.io/PROJECT/kws   SUCCESS
 ```
 
-Copy the image URI from `IMAGE` column (e.g. `gcr.io/PROJECT/myevents`).
+Copy the image URI from `IMAGE` column (e.g. `gcr.io/PROJECT/kws`).
 
-#### Configure Knative
+### Configure Knative
 
-Before we can deploy that service to Knative, we just need to create Kubernetes secrets and update the `deploy/server.yaml` file
-
-```shell
-kubectl create secret generic myevents \
-    --from-literal=OAUTH_CLIENT_ID=$MYEVENTS_OAUTH_CLIENT_ID \
-    --from-literal=OAUTH_CLIENT_SECRET=$MYEVENTS_OAUTH_CLIENT_SECRET
-```
-
-Now in the `deploy/server.yaml` file update the `GCP_PROJECT_ID`
-
-```yaml
-    - name: GCP_PROJECT_ID
-      value: "enter your project ID here"
-```
-
-And the external URL of your which we defined at the begining of this readme in [###knative-url] section.
-
-```yaml
-    - name: EXTERNAL_URL
-      value: "https://myevents.default.DOMAIN.COM"
-```
-
-#### Deploy Service
-
-Once done updating our service manifest (`deploy/server.yaml`) you are ready to deploy it.
-
-```shell
-kubectl apply -f deployments/service.yaml
-```
-
-The response should be
-
-```shell
-service.serving.knative.dev "myevents" configured
-```
-
-To check if the service was deployed successfully you can check the status using `kubectl get pods` command. The response should look something like this (e.g. Ready `3/3` and Status `Running`).
-
-```shell
-NAME                                          READY     STATUS    RESTARTS   AGE
-myevents-00002-deployment-5645f48b4d-mb24j     3/3       Running   0          4h
-```
-
-You should be able to test the app now in browser using the `URL` you defined above.
+Now in the `deployment/service.yaml` file update the `image` URI to value of `IMAGE` column above
 
 ## Disclaimer
 
 This is my personal project and it does not represent my employer. I take no responsibility for issues caused by this code. I do my best to ensure that everything works, but if something goes wrong, my apologies is all you will get.
 
+
+
+```json
+{
+  "contenttype": "text/plain",
+  "data": "This is my sample message",
+  "id": "6CC459AE-D75D-4556-8C14-CD1ED5D95AE7",
+  "source": "https://github.com/mchmarny/knative-ws-example",
+  "specversion": "0.2",
+  "time": "2019-02-13T17:31:00Z",
+  "type": "github.com.mchmarny.knative-ws-example.message"
+}
+```

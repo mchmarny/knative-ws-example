@@ -5,5 +5,4 @@ require (
 	github.com/google/uuid v1.1.0
 	github.com/mchmarny/myevents v0.0.0-20190129001603-4253a49ac80f
 	golang.org/x/net v0.0.0-20190213061140-3a22650c66bd
-	golang.org/x/oauth2 v0.0.0-20190212230446-3e8b2be13635
 )

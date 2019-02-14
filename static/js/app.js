@@ -44,7 +44,7 @@ window.onload = function () {
             console.log(eventObj);
             var item = document.createElement("div");
             item.className = "item";
-            item.innerHTML = JSON.stringify(eventObj, null, 4);
+            item.innerHTML = JSON.stringify(eventObj, undefined, 2);
             appendLog(item);
         };
 
