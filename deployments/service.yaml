@@ -1,0 +1,21 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: kws
+  namespace: demo
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        spec:
+          container:
+            image: gcr.io/s9-demo/kws:latest
+            imagePullPolicy: Always
+            env:
+            - name: RELEASE
+              value: "v0.1.1"
+            - name: KNOWN_PUBLISHER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kws
+                  key: KNOWN_PUBLISHER_TOKEN
