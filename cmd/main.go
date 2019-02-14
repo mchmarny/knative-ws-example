@@ -16,7 +16,6 @@ func main() {
 	// init configs
 	handlers.InitHandlers()
 
-
 	// Static
 	http.Handle("/static/", http.StripPrefix("/static/",
 		  http.FileServer(http.Dir("static"))))

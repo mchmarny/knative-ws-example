@@ -1,6 +1,6 @@
 # knative-ws-example
 
-Simple Knative WebSocket example consisting of Web UI displaying POST'ed Cloud Events
+Simple Knative example consisting of Web UI which uses WebSockets to display POST'ed Cloud Events.
 
 ![Knative WebSocket](/../master/static/img/after.png?raw=true "Knative WebSocket")
 

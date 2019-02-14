@@ -44,7 +44,7 @@ func CloudEventHandler(w http.ResponseWriter, r *http.Request) {
 
 	// check validity of poster token
 	if knownPublisherToken != srcToken {
-		log.Printf("invalid token: got(%s) expected(%s)", srcToken, knownPublisherToken)
+		log.Printf("invalid token: %s", srcToken)
 		http.Error(w, fmt.Sprintf("Invalid publisher token value (%s)", knownPublisherTokenName),
 			http.StatusBadRequest)
 		return

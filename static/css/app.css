@@ -77,6 +77,7 @@ body {
 	height: 40px;
 	color: white;
 	font-family: "Lucida Console", "Courier New", monospace;
+	font-size: 2em;
 }
 
 #eventlog {
@@ -93,7 +94,7 @@ body {
 .item {
 	padding: 3px;
 	font-family: "Lucida Console", "Courier New", monospace;
-	size: 1em;
+	font-size: 1em;
 	border-bottom: 4px dotted #dcdcdc;
 	text-align: left;
 }
