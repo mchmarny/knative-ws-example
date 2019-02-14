@@ -6,7 +6,7 @@ Simple Knative WebSocket example consisting of Web UI displaying POST'ed Cloud E
 
 ## Prerequisites
 
-This sample assumes you already have access to Knative cluster with at least `v0.4` and `kubectl` configured.
+> Note, this sample requires Knative `v0.4` or better
 
 Additionally, if you are want to build the demo you will need `gcloud` installed. See [Installing Google Cloud SDK](https://cloud.google.com/sdk/install)
 
