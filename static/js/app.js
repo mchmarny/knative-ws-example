@@ -30,7 +30,7 @@ window.onload = function () {
 
         sock.onopen = function () {
             console.log("connected to " + wsURL);
-            setMsg("<b>Opening Connection</b>");
+            setMsg("<b>Connection Opened</b>");
         };
 
         sock.onclose = function (e) {

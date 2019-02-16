@@ -13,7 +13,7 @@ spec:
             imagePullPolicy: Always
             env:
             - name: RELEASE
-              value: "v0.1.1"
+              value: "v0.1.4"
             - name: KNOWN_PUBLISHER_TOKEN
               valueFrom:
                 secretKeyRef:

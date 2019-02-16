@@ -8,6 +8,28 @@
     <div id="eventlog"></div>
 </div>
 
+<div id="example-section">
+    <div id="example">
+        <p>
+            To send message run the below <i>curl</i> command where <i>$TOKEN</i>
+            is the token that this app was configured with
+        </p>
+        <pre>
+curl -H "Content-Type: application/json" \
+    -X POST --data "{ \
+    \"specversion\": \"0.2\", \
+    \"type\": \"github.com.mchmarny.knative-ws-example.message\", \
+    \"source\": \"https://github.com/mchmarny/knative-ws-example\", \
+    \"id\": \"6CC459AE-D75D-4556-8C14-CD1ED5D95AE7\", \
+    \"time\": \"2019-02-13T17:31:00Z\", \
+    \"contenttype\": \"text/plain\", \
+    \"data\": \"My sample message\" \
+    }" \
+    {{index . "proto"}}://{{index . "host"}}/?token=$TOKEN
+</pre>
+    </div>
+</div>
+
 {{ template "footer" . }}
 
 {{ end }}

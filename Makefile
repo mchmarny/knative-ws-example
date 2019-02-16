@@ -1,4 +1,4 @@
-.PHONY: app client service
+.PHONY: app client service deployment
 
 # DEV
 test:

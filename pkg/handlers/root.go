@@ -14,7 +14,17 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	proto := r.Header.Get("x-forwarded-proto")
+	if proto == "" {
+		proto = "http"
+	}
+
 	data := make(map[string]interface{})
+
+	data["host"] = r.Host
+	data["proto"] = proto
+
+	log.Printf("data: %v", data)
 
 	// anonymous
 	if err := templates.ExecuteTemplate(w, "index", data); err != nil {

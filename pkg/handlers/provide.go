@@ -7,20 +7,24 @@ import (
 )
 
 var (
-	eventChannel = make(chan interface{}, 1)
+	eventChannel = make(chan interface{}, 100)
+	connections []*websocket.Conn
 )
 
 // WSHandler provides backing service for the UI
 func WSHandler(ws *websocket.Conn) {
 	log.Println("WS connection...")
+
+	connections = append(connections, ws)
+
 	for {
 		select {
 		case m := <-eventChannel:
-			if err := websocket.JSON.Send(ws, m); err != nil {
-				log.Printf("Error on write message: %v", err)
-				break
+			for _, w := range connections {
+				if err := websocket.JSON.Send(w, m); err != nil {
+					log.Printf("Error on write message: %v", err)
+				}
 			}
 		}
 	}
-
 }
