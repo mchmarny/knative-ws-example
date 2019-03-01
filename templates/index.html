@@ -15,18 +15,16 @@
             is the token that this app was configured with
         </p>
         <pre>
-curl -H "Content-Type: application/json" \
-    -X POST --data "{ \
-    \"specversion\": \"0.2\", \
-    \"type\": \"github.com.mchmarny.knative-ws-example.message\", \
-    \"source\": \"https://github.com/mchmarny/knative-ws-example\", \
-    \"id\": \"6CC459AE-D75D-4556-8C14-CD1ED5D95AE7\", \
-    \"time\": \"2019-02-13T17:31:00Z\", \
-    \"contenttype\": \"text/plain\", \
-    \"data\": \"My sample message\" \
-    }" \
-    {{index . "proto"}}://{{index . "host"}}/?token=$TOKEN
-</pre>
+curl -H "Content-Type: text/plain" \
+    -H "ce-specversion: 0.2" \
+    -H "ce-type: github.com.mchmarny.knative-ws-example.message" \
+    -H "ce-source: https://github.com/mchmarny/knative-ws-example" \
+    -H "ce-id: 6CC459AE-D75D-4556-8C14-CD1ED5D95AE7" \
+    -H "ce-time: 2019-02-13T17:31:00Z" \
+    -X POST --data "My sample message" \
+    -H "ce-token: $TOKEN" \
+    {{index . "proto"}}://{{index . "host"}}/v1/event
+        </pre>
     </div>
 </div>
 
