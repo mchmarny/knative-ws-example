@@ -8,12 +8,6 @@ import (
 // RootHandler handles view page
 func RootHandler(w http.ResponseWriter, r *http.Request) {
 
-	// if POST on root
-	if r.Method == http.MethodPost {
-		CloudEventHandler(w, r)
-		return
-	}
-
 	proto := r.Header.Get("x-forwarded-proto")
 	if proto == "" {
 		proto = "http"

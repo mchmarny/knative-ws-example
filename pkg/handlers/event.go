@@ -1,76 +1,73 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/datacodec"
 	"log"
-	"net/http"
-
-	"github.com/cloudevents/sdk-go/v02"
 )
 
 const (
 	knownPublisherTokenName = "token"
 )
 
-// CloudEventHandler submitted messages
-func CloudEventHandler(w http.ResponseWriter, r *http.Request) {
+func init() {
+	datacodec.AddDecoder("text/plain", plainTextDecoder)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	// check method
-	if r.Method != http.MethodPost {
-		log.Printf("wring method: %s", r.Method)
-		http.Error(w, "Invalid method. Only POST supported", http.StatusMethodNotAllowed)
-		return
+func plainTextDecoder(in, out interface{}) error {
+	if in == nil {
+		return nil
 	}
 
-	// parse form to update
-	if err := r.ParseForm(); err != nil {
-		log.Printf("error parsing form: %v", err)
-		http.Error(w, fmt.Sprintf("Post content error (%s)", err),
-			http.StatusBadRequest)
-		return
+	b, ok := in.([]byte)
+	if !ok {
+		return fmt.Errorf("unable to decode input for non-[]byte type")
 	}
 
-	// check for presense of publisher token
-	srcToken := r.URL.Query().Get(knownPublisherTokenName)
-	if srcToken == "" {
-		log.Printf("nil token: %s", srcToken)
-		http.Error(w, fmt.Sprintf("Invalid request (%s missing)", knownPublisherTokenName),
-			http.StatusBadRequest)
-		return
+	s, ok := out.(*string)
+	if !ok {
+		return fmt.Errorf("unable to decode output for non-*string type")
+	}
+	*s = string(b)
+	return nil
+}
+
+func CloudEventReceived(event cloudevents.Event) {
+	//// check for presence of publisher token
+	var srcToken string
+	ctx := event.Context.AsV02()
+	if ctx.Extensions != nil {
+
+		if t, ok := ctx.Extensions[knownPublisherTokenName]; ok {
+			if srcToken, ok = t.(string); !ok {
+				log.Printf("Invalid request (%s missing)", knownPublisherTokenName)
+				return
+			}
+		}
 	}
 
 	// check validity of poster token
-	if knownPublisherToken != srcToken {
-		log.Printf("invalid token: %s", srcToken)
-		http.Error(w, fmt.Sprintf("Invalid publisher token value (%s)", knownPublisherTokenName),
-			http.StatusBadRequest)
+	if srcToken == "" {
+		log.Printf("nil token: %s", srcToken)
 		return
-	}
-
-	converter := v02.NewDefaultHTTPMarshaller()
-	event, err := converter.FromRequest(r)
-	if err != nil {
-		log.Printf("error parsing cloudevent: %v", err)
-		http.Error(w, fmt.Sprintf("Invalid Cloud Event (%v)", err),
-			http.StatusBadRequest)
+	} else if knownPublisherToken != srcToken {
+		log.Printf("invalid token: %s", srcToken)
 		return
 	}
 
 	log.Printf("Event: %v", event)
-	eventData, ok := event.Get("data")
-	if !ok {
-		http.Error(w, "Error, not a cloud event data", http.StatusBadRequest)
+
+	data := ""
+	if err := event.DataAs(&data); err != nil {
+		// the content is not a string, so lets just show the bytes.
+		if b, ok := event.Data.([]byte); ok {
+			eventChannel <- string(b)
+			return
+		}
+		log.Printf("Failed to DataAs: %s", err.Error())
 		return
 	}
 
-	// push event to the channel
-	eventChannel <- eventData
-
-	// response with the parsed payload data
-	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(eventData)
-
+	eventChannel <- data
 }
