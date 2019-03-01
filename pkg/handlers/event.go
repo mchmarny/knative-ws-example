@@ -47,22 +47,24 @@ func CloudEventReceived(event cloudevents.Event) {
 		}
 	}
 
+	// check validity of poster token
 	if srcToken == "" {
 		log.Printf("nil token: %s", srcToken)
 		return
-	}
-
-	// check validity of poster token
-	if knownPublisherToken != srcToken {
+	} else if knownPublisherToken != srcToken {
 		log.Printf("invalid token: %s", srcToken)
 		return
 	}
 
 	log.Printf("Event: %v", event)
 
-	//var data *string
 	data := ""
 	if err := event.DataAs(&data); err != nil {
+		// the content is not a string, so lets just show the bytes.
+		if b, ok := event.Data.([]byte); ok {
+			eventChannel <- string(b)
+			return
+		}
 		log.Printf("Failed to DataAs: %s", err.Error())
 		return
 	}
