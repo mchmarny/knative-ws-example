@@ -16,13 +16,13 @@
         </p>
         <pre>
 curl -H "Content-Type: text/plain" \
-    -H "ce-specversion: 0.2" \
-    -H "ce-type: github.com.mchmarny.knative-ws-example.message" \
-    -H "ce-source: https://github.com/mchmarny/knative-ws-example" \
-    -H "ce-id: 6CC459AE-D75D-4556-8C14-CD1ED5D95AE7" \
-    -H "ce-time: 2019-02-13T17:31:00Z" \
-    -X POST --data "My sample message" \
-    -H "ce-token: $TOKEN" \
+     -H "ce-specversion: 0.2" \
+     -H "ce-type: github.com.mchmarny.knative-ws-example.message" \
+     -H "ce-source: https://github.com/mchmarny/knative-ws-example" \
+     -H "ce-id: $(uuidgen)" \
+     -H "ce-time: $(date +%Y-%m-%dT%H:%M:%S:%Z)" \
+    -H "ce-token: $KNOWN_PUBLISHER_TOKEN" \
+     -X POST --data "My sample message" \
     {{index . "proto"}}://{{index . "host"}}/v1/event
         </pre>
     </div>

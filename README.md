@@ -48,7 +48,8 @@ kubectl create secret generic kws -n demo \
 Once our namespace and secret is created, you can apply the  (`deployment/service.yaml`) to deploy the application
 
 ```shell
-kubectl apply -f deployment/service.yaml
+kubectl -n demo apply -f \
+    https://raw.githubusercontent.com/mchmarny/knative-ws-example/master/deployment/service.yaml
 ```
 
 If everything worked correctly you should be able to see the `kws` service listed as running
@@ -77,17 +78,15 @@ The status message on the top fo the screen should say `Opening Connection`
 Now that the application is deployed, you can use `curl` to post to its endpoint and the messages should show on the UI. For ease of demonstration we are going to post a simple text message with hard-coded values.
 
 ```shell
-curl -H "Content-Type: application/json" \
-     -X POST --data "{ \
-        \"specversion\": \"0.2\", \
-        \"type\": \"github.com.mchmarny.knative-ws-example.message\", \
-        \"source\": \"https://github.com/mchmarny/knative-ws-example\", \
-        \"id\": \"6CC459AE-D75D-4556-8C14-CD1ED5D95AE7\", \
-        \"time\": \"2019-02-13T17:31:00Z\", \
-        \"contenttype\": \"text/plain\", \
-        \"data\": \"This is my sample message\" \
-    }" \
-    http://kws.demo.YOUR-DOAIN.com/?token=${KNOWN_PUBLISHER_TOKEN}
+curl -H "Content-Type: text/plain" \
+     -H "ce-specversion: 0.2" \
+     -H "ce-type: github.com.mchmarny.knative-ws-example.message" \
+     -H "ce-source: https://github.com/mchmarny/knative-ws-example" \
+     -H "ce-id: $(uuidgen)" \
+     -H "ce-time: $(date +%Y-%m-%dT%H:%M:%S:%Z)" \
+     -H "ce-token: $(KNOWN_PUBLISHER_TOKEN)" \
+     -X POST --data "My sample message" \
+    https://kws.demo.knative.tech/v1/event
 ```
 
 Every time you run that command, a new message should be added to the UI. Go ahead, change the `data` value from `This is my sample message` to something else and post it.

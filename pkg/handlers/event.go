@@ -33,12 +33,12 @@ func plainTextDecoder(in, out interface{}) error {
 	return nil
 }
 
+// CloudEventReceived handles the cloud event post
 func CloudEventReceived(event cloudevents.Event) {
 	//// check for presence of publisher token
 	var srcToken string
 	ctx := event.Context.AsV02()
 	if ctx.Extensions != nil {
-
 		if t, ok := ctx.Extensions[knownPublisherTokenName]; ok {
 			if srcToken, ok = t.(string); !ok {
 				log.Printf("Invalid request (%s missing)", knownPublisherTokenName)

@@ -18,7 +18,7 @@ deps:
 image:
 	gcloud builds submit \
 		--project knative-samples \
-		--tag gcr.io/knative-samples/kws:latest
+		--tag gcr.io/knative-samples/kws
 
 # DEPLOYMENT
 
